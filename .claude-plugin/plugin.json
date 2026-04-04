@@ -1,0 +1,20 @@
+{
+  "name": "pyVGM",
+  "description": "Vorgehensmodell (Plan/Build/Doc/Run) für Python Flask-Projekte. Stellt Skills, Templates, Scripts und Hooks bereit für strukturierte Projektentwicklung mit Claude Code.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Assconso GmbH",
+    "email": "joerg.gaudlitz@assconso.de",
+    "url": "https://www.assconso.de"
+  },
+  "repository": "https://github.com/kustus/python-vorgehensmodell",
+  "license": "MIT",
+  "keywords": ["python", "flask", "vorgehensmodell", "plan-build-run", "governance"],
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json",
+  "postInstall": {
+    "reload": "Cmd+Shift+P > Developer: Reload Window",
+    "nextCommand": "/pyVGM-init-project",
+    "message": "Developer: Reload Window > /pyVGM-init-project"
+  }
+}
