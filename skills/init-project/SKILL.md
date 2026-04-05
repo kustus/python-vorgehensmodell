@@ -16,12 +16,14 @@ Nutze **ausschließlich** die Script-Ausgabe als Datenquelle. Erfinde keine Info
 
 ### Wenn "INITIALISIERT":
 
-Lies die Werte aus der Ausgabe und die Template-Listen.
+Lies die Werte aus der Ausgabe (PLAN, BUILD, RUN, TOTAL, CLAUDE_MD, SKILLS) und die Template-Listen (PLAN-TEMPLATES, BUILD-TEMPLATES, RUN-TEMPLATES).
 
-Gib zuerst eine Zusammenfassung mit:
+Gib zuerst den BANNER-Block aus der Ausgabe **exakt und unverändert** als Code-Block wieder.
+
+Dann zeige eine Zusammenfassung mit:
 - Verzeichnisbaum `.Vorgehensmodell/` mit den Zahlen und Template-Namen aus der Ausgabe
-- Ob CLAUDE.md erstellt wurde und wie viele Skills verlinkt sind
-- Gesamtzahl der erstellten Dateien
+- Ob CLAUDE.md erstellt wurde und wie viele Skills verlinkt sind (aus SKILLS)
+- Gesamtzahl der erstellten Dateien aus TOTAL
 
 #### Framework-Guide anzeigen
 
