@@ -1,35 +1,32 @@
-# Release-Management
+# Release-Management (Projekt)
+
+> **Basis:** [framework-links/RELEASE-MANAGEMENT.md](../framework-links/RELEASE-MANAGEMENT.md)
+> Die Framework-Vorgaben gelten uneingeschränkt. Diese Datei enthält **ausschließlich projektspezifische Details** — keine Überschreibung oder Abschwächung der Basis-Regeln.
 
 ## Umgebungen
-| Umgebung | Host | URL |
-|----------|------|-----|
-| Entwicklung | localhost | http://localhost:... |
-| Produktion | | |
 
-## Versionierung
-`MAJOR.MINOR.PATCH` in `pyproject.toml`
+| Umgebung | Host | URL | Zweck |
+|----------|------|-----|-------|
+| **Entwicklung** | localhost | http://localhost:... | Lokale Entwicklung |
+| **Produktion** | | | Produktiver Betrieb |
 
-- Patch: Bugfix
-- Minor: Feature
-- Major: Architekturbruch
+### Zugang
+<!-- Projektspezifische Auth-Details -->
 
-## Deploy-Modi
-- `/pyVGM-deploy` — Schnell (Standard): Build + Deploy
-- `/pyVGM-deploy full` — Mit Tests + Git Tag
-- `/pyVGM-deploy pre-prod` — Übergabepaket (Images + Docs)
-- `/pyVGM-deploy prod` — Direkt auf Produktiv-Host
+## Aktuelle Version
 
-## Deploy-Pipeline
-```
-docker build → (optional: push to registry) → docker compose up -d
-```
+<!-- z.B. v0.1.0 -->
 
-## Rollback
-Git Tag auschecken → neu builden → deployen.
+## Freigabe-Rollen
 
-## Freigabe-Prozess
-| Rolle | Verantwortung |
-|-------|--------------|
-| Entwickler | Implementierung, Test-Deploys |
-| Fachlicher Freigeber | Fachliche Abnahme |
-| Technischer Freigeber | Prod-Deploy-Genehmigung |
+| Rolle | Person | Verantwortung |
+|-------|--------|--------------|
+| Entwickler | | Implementierung, Test-Deploys |
+| Fachlicher Freigeber | | Fachliche Abnahme |
+| Technischer Freigeber | | Prod-Deploy-Genehmigung |
+
+## Zeitplan
+
+| Meilenstein | Geplant | Abhängigkeit |
+|-------------|---------|-------------|
+<!-- Projektspezifische Meilensteine -->

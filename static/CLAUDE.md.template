@@ -6,72 +6,25 @@
 
 **Vor jeder inhaltlichen Arbeit** müssen diese Dateien gelesen werden:
 
-1. [.Vorgehensmodell/build/PROJECT.md](.Vorgehensmodell/build/PROJECT.md) — Vision, Architektur, Ports
-2. [.Vorgehensmodell/build/ARCHITECTURE.md](.Vorgehensmodell/build/ARCHITECTURE.md) — Tech-Stack, Patterns, Deploy
-3. [.Vorgehensmodell/build/STATE.md](.Vorgehensmodell/build/STATE.md) — Aktueller Stand, Entscheidungen
-4. [.Vorgehensmodell/build/REQUIREMENTS.md](.Vorgehensmodell/build/REQUIREMENTS.md) — Features nach Phasen
-5. [.Vorgehensmodell/build/DEVELOPMENT-GUIDELINES.md](.Vorgehensmodell/build/DEVELOPMENT-GUIDELINES.md) — Code-Konventionen
+### Framework-Vorgaben (`.Vorgehensmodell/framework-links/`)
+1. [DEVELOPMENT-GUIDELINES.md](.Vorgehensmodell/framework-links/DEVELOPMENT-GUIDELINES.md) — Code-Konventionen, Architektur-Regeln
+2. [ARCHITECTURE.md](.Vorgehensmodell/framework-links/ARCHITECTURE.md) — Tech-Stack, UI-Konventionen
+3. [RELEASE-MANAGEMENT.md](.Vorgehensmodell/framework-links/RELEASE-MANAGEMENT.md) — Versionierung, Deploy-Modi
+4. [FLASK-KNOWHOW.md](.Vorgehensmodell/framework-links/FLASK-KNOWHOW.md) — Flask-Fallstricke & Best Practices
+5. [FLASK-PATTERNS.md](.Vorgehensmodell/framework-links/FLASK-PATTERNS.md) — Erprobte Flask/Jinja2-Patterns
 
-Bei Bedarf zusätzlich:
-- [.Vorgehensmodell/build/FLASK-KNOWHOW.md](.Vorgehensmodell/build/FLASK-KNOWHOW.md) — Flask-Fallstricke & Best Practices
-- [.Vorgehensmodell/build/FLASK-PATTERNS.md](.Vorgehensmodell/build/FLASK-PATTERNS.md) — Erprobte Flask-Patterns
-
----
-
-## Nicht-verhandelbare Regeln
-
-1. **Befehle ausführen** — Wenn ein Skill einen Befehl vorgibt (`bash ...`), führe ihn aus statt nur zu zeigen
-2. **Bei Unklarheit warnen, aber weitermachen** — Nicht abbrechen, sondern Warnung ausgeben und beste Lösung wählen
-3. **Kein eigenständiges Deploy** — IMMER vorher den User fragen
-4. **Version bumpen** — Bei jeder Änderung Version in `pyproject.toml` erhöhen
+### Projekt-Dateien (`.Vorgehensmodell/build/`)
+1. [PROJECT.md](.Vorgehensmodell/build/PROJECT.md) — Vision, Architektur, Ports
+2. [ARCHITECTURE.md](.Vorgehensmodell/build/ARCHITECTURE.md) — Projektspezifische Architektur-Details
+3. [STATE.md](.Vorgehensmodell/build/STATE.md) — Aktueller Stand, Entscheidungen
+4. [REQUIREMENTS.md](.Vorgehensmodell/build/REQUIREMENTS.md) — Features nach Phasen
+5. [DEVELOPMENT-GUIDELINES.md](.Vorgehensmodell/build/DEVELOPMENT-GUIDELINES.md) — Projektspezifische Code-Konventionen
 
 ---
 
-## Python/Flask-Konventionen
+## Projektspezifische Konventionen
 
-### Architektur
-- **Service-Schicht:** Fachlogik in Services, nicht in Flask-Routes
-- **Business-Logik nur im Backend** — Browser-JS ist für Darstellung + Interaktion
-- **Pakete im `.venv`** installieren, nie global
-
-### Flask-Pflichten
-- `create_app()` Factory mit Context Processor (`now`, `app_version`)
-- Pflicht-Endpunkte: `GET /api/health`, `GET /manifest`, `POST /api/reload-config`
-- **Gunicorn** im Dockerfile (`--workers 1 --threads 4`), nicht `app.run()`
-- **APP_VERSION** per `importlib.metadata.version()`, nicht hardcoded
-
-### UI/UX
-- **Bootstrap-Karten** immer mit `.card-body`
-- **Formulare:** `row g-3` + `col-md-X`, kein Flexbox-Hacking
-- **Kein `integrity`-Attribut** bei CDN-Scripts (Safari blockiert bei Hash-Mismatch)
-- **Keine Google Fonts** direkt verlinken (DSGVO) — lokal als WOFF2
-- **HTML-Inputs für Zahlen:** `type="text" inputmode="decimal"`, nicht `type="number"`
-- **Jinja2:** `request.host.split(':')[0]` statt `request.url.hostname` (immer leer)
-
-### Docker
-- Dockerfile mit Gunicorn, nicht Flask Dev-Server
-- Health-Check konfigurieren
-- Config-Dateien nie überschreiben (rsync-Excludes)
-
----
-
-## Kontexthygiene
-
-Der Hauptkontext muss schlank bleiben. Schwere Arbeit an Agents delegieren.
-
-### Pflicht: Agents nutzen für
-- **Codebase-Recherche** (mehr als 2-3 Dateien lesen) → `subagent_type: Explore`
-- **Code-Generierung** ganzer Dateien oder Module → Agent mit Write-Berechtigung
-- **Reviews & Checks** (Quality, Security, Flask) → Agent liefert nur Ergebnis zurück
-- **Dokumentation generieren** → Agent schreibt, Hauptkontext koordiniert
-
-### Verboten im Hauptkontext
-- Große Dateien direkt lesen (> 200 Zeilen) — Agent nutzen
-- Breite Grep-Suchen über die gesamte Codebase — Agent nutzen
-- Mehrere Dateien nacheinander lesen um "einen Überblick zu bekommen" — Agent nutzen
-
-### Worktree-Isolation
-Bei riskanten Änderungen Agents mit `isolation: "worktree"` starten — arbeitet auf einer Kopie, Original bleibt sicher.
+<!-- Ergänzende Regeln die nur für dieses Projekt gelten -->
 
 ---
 

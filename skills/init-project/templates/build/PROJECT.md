@@ -1,49 +1,22 @@
-# {{PROJEKTNAME}} — Projektvision
+# {{PROJEKTNAME}}
 
-## Ziel
+## Vision
+<!-- {{PROJEKTBESCHREIBUNG}} -->
 
-{{PROJEKTBESCHREIBUNG}}
+## Auftraggeber & Entwicklung
+| Feld | Inhalt |
+|------|--------|
+| Auftraggeber | |
+| Entwickler | |
+| Test-Umgebung | |
+| Produktiv-Host | |
+| Repository | |
 
-## Prinzipien
+## Akteure
+<!-- Wer benutzt die Anwendung? Rollen + Beschreibung -->
 
-- **...** — ...
-- **...** — ...
-
-## Architektur
-
-```
-{{PROJEKTNAME}}/
-├── src/
-│   └── {{PACKAGE_NAME}}/
-│       ├── __init__.py
-│       ├── main.py           # create_app() + Blueprint-Registrierung
-│       ├── views.py           # Flask-Blueprint (Routen, API-Endpunkte)
-│       ├── services/          # Fachlogik (Service-Schicht)
-│       ├── models/            # SQLAlchemy-Models
-│       └── ui/
-│           ├── templates/     # Jinja2-Templates
-│           └── static/        # CSS/JS
-├── tests/
-├── pyproject.toml
-├── Dockerfile
-└── docker-compose.yml
-```
-
-## Infrastruktur
-
-| Komponente | Technologie | Details |
-|------------|------------|---------|
-| Runtime | Docker | ... |
-| Datenbank | SQLite + SQLAlchemy | ... |
-| Webserver | Gunicorn | `--workers 1 --threads 4` |
-| Frontend | Bootstrap 5.3 | ... |
-
-## Ports / URLs
-
-| Service | Port | URL |
-|---------|------|-----|
-| {{PROJEKTNAME}} | ... | http://localhost:... |
+## Datenmodell
+<!-- SQLAlchemy-Models mit Feldern (wird in Build-Phase ausgefüllt) -->
 
 ## Offene Punkte
-
-- [ ] ...
+- [ ]

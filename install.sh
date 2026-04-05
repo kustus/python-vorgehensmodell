@@ -87,6 +87,69 @@ else
   done
 fi
 
+# === Framework-Links: Symlinks für bestehende Projekte erstellen/aktualisieren ===
+if [ "$PLUGIN_MODE" = true ]; then
+  VM_DIR="${PROJECT_ROOT}/.Vorgehensmodell"
+  if [ -d "$VM_DIR" ]; then
+    mkdir -p "${VM_DIR}/framework-links"
+
+    SUBMODULE_NAME=$(basename "${SCRIPT_DIR}")
+    REL_STATIC="../${SUBMODULE_NAME}/static"
+    REL_ROOT="../${SUBMODULE_NAME}"
+
+    # static/ Dateien als Symlinks
+    for doc in DEVELOPMENT-GUIDELINES.md ARCHITECTURE.md RELEASE-MANAGEMENT.md FLASK-KNOWHOW.md FLASK-PATTERNS.md FRAMEWORK-GUIDE.md; do
+      link="${VM_DIR}/framework-links/${doc}"
+      if [ -f "${SCRIPT_DIR}/static/${doc}" ] && [ ! -L "$link" ]; then
+        ln -sf "${REL_STATIC}/${doc}" "$link"
+      fi
+    done
+
+    # Assets
+    for asset in pdf-style.css assconso-logo.png; do
+      link="${VM_DIR}/framework-links/${asset}"
+      if [ -f "${SCRIPT_DIR}/static/${asset}" ] && [ ! -L "$link" ]; then
+        ln -sf "${REL_STATIC}/${asset}" "$link"
+      fi
+    done
+
+    # FRAMEWORK-BACKLOG.md (liegt im Framework-Root, nicht in static/)
+    link="${VM_DIR}/framework-links/FRAMEWORK-BACKLOG.md"
+    if [ -f "${SCRIPT_DIR}/FRAMEWORK-BACKLOG.md" ] && [ ! -L "$link" ]; then
+      ln -sf "${REL_ROOT}/FRAMEWORK-BACKLOG.md" "$link"
+    fi
+
+    # === Migration: Alte Kopien aufräumen (falls vorhanden) ===
+    for old in "${VM_DIR}/FRAMEWORK-GUIDE.md" "${VM_DIR}/FRAMEWORK-BACKLOG.md"; do
+      if [ -f "$old" ] && [ ! -L "$old" ]; then
+        rm -f "$old"
+      fi
+    done
+    for old in "${VM_DIR}/dokumentation/pdf-style.css" "${VM_DIR}/dokumentation/assconso-logo.png"; do
+      if [ -f "$old" ] && [ ! -L "$old" ]; then
+        rm -f "$old"
+      fi
+    done
+    for old in "${VM_DIR}/build/FLASK-KNOWHOW.md" "${VM_DIR}/build/FLASK-PATTERNS.md"; do
+      if [ -f "$old" ] && [ ! -L "$old" ]; then
+        rm -f "$old"
+      fi
+    done
+    # FRAMEWORK-GUIDE.md kann auch in build/ liegen (alte Projekte)
+    for old in "${VM_DIR}/build/FRAMEWORK-GUIDE.md"; do
+      if [ -f "$old" ] && [ ! -L "$old" ]; then
+        rm -f "$old"
+      fi
+    done
+    # pdf-assets können in pdf-assets/ Unterordner liegen
+    for old in "${VM_DIR}/dokumentation/pdf-assets/pdf-style.css" "${VM_DIR}/dokumentation/pdf-assets/assconso-logo.png"; do
+      if [ -f "$old" ] && [ ! -L "$old" ]; then
+        rm -f "$old"
+      fi
+    done
+  fi
+fi
+
 # post-install.md ins Projektverzeichnis kopieren (mit Platzhaltern ersetzen)
 POST_INSTALL_SRC="${SCRIPT_DIR}/.claude-plugin/post-install.md"
 if [ -f "$POST_INSTALL_SRC" ]; then

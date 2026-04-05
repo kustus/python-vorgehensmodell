@@ -37,7 +37,7 @@ pdf_options:
   headerTemplate: '<div style="font-size:8px;width:100%;text-align:center;color:#999;">{{PROJEKTNAME}} — Dokumentation</div>'
   footerTemplate: '<div style="font-size:8px;width:100%;text-align:right;color:#999;padding-right:25mm;">Seite <span class="pageNumber"></span> von <span class="totalPages"></span></div>'
   displayHeaderFooter: true
-stylesheet: pdf-style.css
+stylesheet: ../framework-links/pdf-style.css
 ---
 ```
 
@@ -46,14 +46,14 @@ stylesheet: pdf-style.css
 Am Anfang jedes Dokuments (nach Frontmatter, vor erstem Header):
 
 ```markdown
-![Logo](assconso-logo.png)
+![Logo](../framework-links/assconso-logo.png)
 ```
 
 ### 4. PDF generieren
 
 ```bash
 cd .Vorgehensmodell/dokumentation/
-npx md-to-pdf <datei>.md --stylesheet pdf-style.css
+npx md-to-pdf <datei>.md --stylesheet ../framework-links/pdf-style.css
 ```
 
 ### 5. Zusammenfassung

@@ -9,78 +9,106 @@ PROJECT_ROOT="$(cd "${PLUGIN_ROOT}/.." && pwd)"
 
 VGM_DIR="${PROJECT_ROOT}/.Vorgehensmodell"
 TEMPLATES_DIR="${PLUGIN_ROOT}/skills/init-project/templates"
+STATIC_DIR="${PLUGIN_ROOT}/static"
 
 # Prüfen ob bereits initialisiert
 if [ -d "${VGM_DIR}" ]; then
   echo "BEREITS_INITIALISIERT"
-  echo "Verzeichnis .Vorgehensmodell/ existiert bereits."
+  # Statusbericht ausgeben
+  echo "---STATUS---"
+  for phase in plan build run; do
+    echo "PHASE:${phase}"
+    if [ -d "${VGM_DIR}/${phase}" ]; then
+      for f in "${VGM_DIR}/${phase}"/*.md; do
+        [ -f "$f" ] || continue
+        name=$(basename "$f" .md)
+        # Prüfe ob Datei mehr als nur Template-Inhalt hat (>10 Zeilen = ausgefüllt)
+        tmpl="${TEMPLATES_DIR}/${phase}/${name}.md"
+        if [ -f "$tmpl" ] && cmp -s "$f" "$tmpl"; then
+          echo "  TEMPLATE:${name}"
+        else
+          echo "  AUSGEFUELLT:${name}"
+        fi
+      done
+    fi
+  done
   exit 0
 fi
 
-# Verzeichnisstruktur anlegen
+# === Struktur anlegen ===
 mkdir -p "${VGM_DIR}/plan"
 mkdir -p "${VGM_DIR}/build"
 mkdir -p "${VGM_DIR}/run"
 mkdir -p "${VGM_DIR}/dokumentation"
+mkdir -p "${VGM_DIR}/framework-links"
 
-# Templates kopieren
-COPIED=0
+# === Templates kopieren (nur Projekt-Dateien) ===
+cp "${TEMPLATES_DIR}"/plan/*.md "${VGM_DIR}/plan/"
+cp "${TEMPLATES_DIR}"/build/*.md "${VGM_DIR}/build/"
+cp "${TEMPLATES_DIR}"/run/*.md "${VGM_DIR}/run/"
 
-# Plan-Phase
-for f in BUSINESS-CASE.md STAKEHOLDER.md SCOPE.md USE-CASES.md RISKS.md MILESTONES.md; do
-  if [ -f "${TEMPLATES_DIR}/plan/${f}" ]; then
-    cp "${TEMPLATES_DIR}/plan/${f}" "${VGM_DIR}/plan/${f}"
-    COPIED=$((COPIED + 1))
+# === Framework-Links: Symlinks zu Framework-Dateien ===
+SUBMODULE_NAME=$(basename "${PLUGIN_ROOT}")
+REL_STATIC="../${SUBMODULE_NAME}/static"
+REL_ROOT="../${SUBMODULE_NAME}"
+
+# static/ Dateien
+for doc in DEVELOPMENT-GUIDELINES.md ARCHITECTURE.md RELEASE-MANAGEMENT.md FLASK-KNOWHOW.md FLASK-PATTERNS.md FRAMEWORK-GUIDE.md; do
+  if [ -f "${STATIC_DIR}/${doc}" ]; then
+    ln -sf "${REL_STATIC}/${doc}" "${VGM_DIR}/framework-links/${doc}"
   fi
 done
 
-# Build-Phase
-for f in PROJECT.md ARCHITECTURE.md REQUIREMENTS.md DEVELOPMENT-GUIDELINES.md STATE.md RELEASE-MANAGEMENT.md RELEASE-PLAN.md ROADMAP.md; do
-  if [ -f "${TEMPLATES_DIR}/build/${f}" ]; then
-    cp "${TEMPLATES_DIR}/build/${f}" "${VGM_DIR}/build/${f}"
-    COPIED=$((COPIED + 1))
+# Assets
+for asset in pdf-style.css assconso-logo.png; do
+  if [ -f "${STATIC_DIR}/${asset}" ]; then
+    ln -sf "${REL_STATIC}/${asset}" "${VGM_DIR}/framework-links/${asset}"
   fi
 done
 
-# Run-Phase
-for f in OPERATIONS.md SUPPORT.md TRAINING.md DECOMMISSION.md; do
-  if [ -f "${TEMPLATES_DIR}/run/${f}" ]; then
-    cp "${TEMPLATES_DIR}/run/${f}" "${VGM_DIR}/run/${f}"
-    COPIED=$((COPIED + 1))
+# FRAMEWORK-BACKLOG.md (liegt im Framework-Root, nicht in static/)
+if [ -f "${PLUGIN_ROOT}/FRAMEWORK-BACKLOG.md" ]; then
+  ln -sf "${REL_ROOT}/FRAMEWORK-BACKLOG.md" "${VGM_DIR}/framework-links/FRAMEWORK-BACKLOG.md"
+fi
+
+# === CLAUDE.md erstellen (nur wenn nicht vorhanden) ===
+if [ ! -f "${PROJECT_ROOT}/CLAUDE.md" ]; then
+  if [ -f "${STATIC_DIR}/CLAUDE.md.template" ]; then
+    cp "${STATIC_DIR}/CLAUDE.md.template" "${PROJECT_ROOT}/CLAUDE.md"
   fi
-done
-
-# Static Files kopieren
-if [ -f "${PLUGIN_ROOT}/static/FLASK-KNOWHOW.md" ]; then
-  cp "${PLUGIN_ROOT}/static/FLASK-KNOWHOW.md" "${VGM_DIR}/build/FLASK-KNOWHOW.md"
-  COPIED=$((COPIED + 1))
-fi
-if [ -f "${PLUGIN_ROOT}/static/FLASK-PATTERNS.md" ]; then
-  cp "${PLUGIN_ROOT}/static/FLASK-PATTERNS.md" "${VGM_DIR}/build/FLASK-PATTERNS.md"
-  COPIED=$((COPIED + 1))
-fi
-if [ -f "${PLUGIN_ROOT}/static/pdf-style.css" ]; then
-  cp "${PLUGIN_ROOT}/static/pdf-style.css" "${VGM_DIR}/dokumentation/pdf-style.css"
-  COPIED=$((COPIED + 1))
-fi
-if [ -f "${PLUGIN_ROOT}/static/assconso-logo.png" ]; then
-  cp "${PLUGIN_ROOT}/static/assconso-logo.png" "${VGM_DIR}/dokumentation/assconso-logo.png"
-  COPIED=$((COPIED + 1))
 fi
 
-# CLAUDE.md aus Template erstellen (falls noch nicht vorhanden)
-if [ ! -f "${PROJECT_ROOT}/CLAUDE.md" ] && [ -f "${PLUGIN_ROOT}/static/CLAUDE.md.template" ]; then
-  cp "${PLUGIN_ROOT}/static/CLAUDE.md.template" "${PROJECT_ROOT}/CLAUDE.md"
-  COPIED=$((COPIED + 1))
-fi
+# === Zusammenfassung ===
+PLAN_COUNT=$(ls "${VGM_DIR}/plan/"*.md 2>/dev/null | wc -l | tr -d ' ')
+BUILD_COUNT=$(ls "${VGM_DIR}/build/"*.md 2>/dev/null | wc -l | tr -d ' ')
+RUN_COUNT=$(ls "${VGM_DIR}/run/"*.md 2>/dev/null | wc -l | tr -d ' ')
+LINK_COUNT=$(ls "${VGM_DIR}/framework-links/" 2>/dev/null | wc -l | tr -d ' ')
+TOTAL=$((PLAN_COUNT + BUILD_COUNT + RUN_COUNT))
 
-# Zusammenfassung
+echo "---BANNER---"
+echo '▄▀▄ ▄▀▀ ▄▀▀ ▄▀▀ ▄▀▄ █▄ █ ▄▀▀ ▄▀▄   Claude Code Plugin - pyVGM'
+echo '█▀█ ▀▀▄ ▀▀▄ █   █ █ █ ▀█ ▀▀▄ █ █   (C) 2026 Assconso GmbH'
+echo '▀ ▀ ▀▀▀ ▀▀▀ ▀▀▀ ▀▀▀ ▀  ▀ ▀▀▀ ▀▀▀   www.assconso.de'
 echo "INITIALISIERT"
-echo "${COPIED} Dateien erstellt in .Vorgehensmodell/"
-echo ""
-echo "Struktur:"
-echo "  .Vorgehensmodell/"
-echo "  ├── plan/          (6 Templates: Business Case, Stakeholder, Scope, ...)"
-echo "  ├── build/         (8+ Templates: Project, Architecture, Requirements, ...)"
-echo "  ├── run/           (4 Templates: Operations, Support, Training, Decommission)"
-echo "  └── dokumentation/ (PDF-Style, Logo)"
+echo "PLAN:${PLAN_COUNT}"
+echo "BUILD:${BUILD_COUNT}"
+echo "RUN:${RUN_COUNT}"
+echo "TOTAL:${TOTAL}"
+echo "CLAUDE_MD:$([ -f "${PROJECT_ROOT}/CLAUDE.md" ] && echo 'ja' || echo 'nein')"
+echo "SKILLS:$(ls -d "${PROJECT_ROOT}/.claude/skills/pyVGM-"* 2>/dev/null | wc -l | tr -d ' ')"
+echo "FRAMEWORK_LINKS:${LINK_COUNT}"
+echo "---PLAN-TEMPLATES---"
+for f in "${VGM_DIR}/plan/"*.md; do
+  [ -f "$f" ] || continue
+  echo "  $(basename "$f" .md)"
+done
+echo "---BUILD-TEMPLATES---"
+for f in "${VGM_DIR}/build/"*.md; do
+  [ -f "$f" ] || continue
+  echo "  $(basename "$f" .md)"
+done
+echo "---RUN-TEMPLATES---"
+for f in "${VGM_DIR}/run/"*.md; do
+  [ -f "$f" ] || continue
+  echo "  $(basename "$f" .md)"
+done

@@ -77,15 +77,34 @@ mein-projekt/
 ├── .basis-python-framework/    ← Submodul (Framework-Source)
 ├── .claude/skills/pyVGM-*      ← Symlinks auf Framework-Skills
 ├── .Vorgehensmodell/            ← Projektdokumente
+│   ├── framework-links/        ← Symlinks ins Framework (read-only)
+│   │   ├── DEVELOPMENT-GUIDELINES.md
+│   │   ├── ARCHITECTURE.md
+│   │   ├── RELEASE-MANAGEMENT.md
+│   │   ├── FLASK-KNOWHOW.md
+│   │   ├── FLASK-PATTERNS.md
+│   │   ├── FRAMEWORK-GUIDE.md
+│   │   ├── FRAMEWORK-BACKLOG.md
+│   │   ├── pdf-style.css
+│   │   └── assconso-logo.png
+│   ├── build/                  ← Projektspezifische Doku (editierbar)
 │   ├── plan/                   (Business Case, Stakeholder, Scope, ...)
-│   ├── build/                  (Project, Architecture, Requirements, ...)
 │   ├── run/                    (Operations, Support, Training, ...)
-│   └── dokumentation/          (PDF-Style, Logo, generierte Docs)
+│   └── dokumentation/          (generierte Docs + PDFs)
 ├── CLAUDE.md                   ← Projektregeln für Claude
 ├── pyproject.toml
 ├── Dockerfile
 └── src/
 ```
+
+### Framework/Projekt-Trennung
+
+| Typ | Ort | Mechanismus |
+|-----|-----|-------------|
+| Framework-Wissen | `framework-links/` | Symlink ins Submodul (read-only) |
+| Projekt-Wissen | `build/` | Kopie aus Template (editierbar) |
+
+Dateien wie `DEVELOPMENT-GUIDELINES.md` existieren in **beiden** Verzeichnissen — die Framework-Version enthält generische Regeln, die Projekt-Version nur projektspezifische Ergänzungen mit einem Basis-Header-Verweis.
 
 ---
 
@@ -101,13 +120,20 @@ mein-projekt/
 6. **Meilensteine** — Wann ist was fertig?
 
 ### Build-Phase (Entwicklung)
-- `PROJECT.md` — Vision, Architektur-Übersicht
-- `ARCHITECTURE.md` — Tech-Stack, Patterns, Deploy
-- `REQUIREMENTS.md` — Features nach Phasen
+
+**Framework-Vorgaben** (via `framework-links/`, read-only):
 - `DEVELOPMENT-GUIDELINES.md` — Code-Konventionen
-- `STATE.md` — Aktueller Stand, Entscheidungen
+- `ARCHITECTURE.md` — Tech-Stack, UI-Konventionen
+- `RELEASE-MANAGEMENT.md` — Versionierung, Deploy-Modi
 - `FLASK-KNOWHOW.md` — Bekannte Fallstricke
 - `FLASK-PATTERNS.md` — Erprobte Patterns
+
+**Projekt-Dateien** (in `build/`, editierbar):
+- `PROJECT.md` — Vision, Architektur-Übersicht
+- `ARCHITECTURE.md` — Projektspezifische Details (mit Basis-Header)
+- `REQUIREMENTS.md` — Features nach Phasen
+- `DEVELOPMENT-GUIDELINES.md` — Projektspezifische Ergänzungen (mit Basis-Header)
+- `STATE.md` — Aktueller Stand, Entscheidungen
 
 ### Run-Phase (Betrieb)
 - `OPERATIONS.md` — Verantwortlichkeiten, Monitoring
