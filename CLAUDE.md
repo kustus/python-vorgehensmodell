@@ -83,3 +83,12 @@ Vier Modi — Details in [RELEASE-MANAGEMENT.md](.Vorgehensmodell/framework-link
 - Tests sind **Pflicht vor jedem formalen Deploy** (nicht bei `/deploy`)
 - Neue Geschäftslogik in `services/` **muss** Tests haben
 - Testdateien in `tests/` Verzeichnis
+
+## Changelog-Pflicht
+
+Bei **jeder Änderung** am Framework muss `CHANGELOG.md` aktualisiert werden:
+- Neuer Eintrag oben (Datum + Kurzbeschreibung)
+- **Migration**-Abschnitt ist Pflicht — beschreibt was im Projekt zu tun ist
+- Falls kein Handlungsbedarf: `### Migration: Keine`
+- Schritte müssen konkret und ausführbar sein (Dateipfade, Befehle)
+- Der `/update`-Skill liest diese Schritte und führt sie automatisch aus
