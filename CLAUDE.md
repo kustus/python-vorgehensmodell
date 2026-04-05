@@ -84,6 +84,15 @@ Vier Modi — Details in [RELEASE-MANAGEMENT.md](.Vorgehensmodell/framework-link
 - Neue Geschäftslogik in `services/` **muss** Tests haben
 - Testdateien in `tests/` Verzeichnis
 
+## Framework-Versionierung
+
+Die Framework-Version steht in `.claude-plugin/plugin.json`. Bei Änderungen am Framework Version erhöhen:
+- **Patch** (1.0.X): Bugfixes, Tippfehler, kosmetische Korrekturen
+- **Minor** (1.X.0): Neue Skills, neue Dateien, strukturelle Änderungen
+- **Major** (X.0.0): Breaking Changes die alle Projekte betreffen
+
+Die Version wird von `install.sh` ausgelesen und im Banner angezeigt.
+
 ## Changelog-Pflicht
 
 Bei **jeder Änderung** am Framework muss `CHANGELOG.md` aktualisiert werden:
