@@ -11,6 +11,30 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"DEPLOY-ERINNERUNG: Hat der User diesem Deploy explizit zugestimmt? Falls nicht, STOPPE und frage den User zuerst!\"}}'",
+            "if": "Bash(*deploy.sh*)",
+            "statusMessage": "pyVGM: Deploy-Schutz..."
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.prompt // \"\"' | grep -iqE '\\b(deploy|deployen|deploye|ausrollen|build.*(und|&).*deploy|auf.*nas.*laden|neu.*bauen.*und.*starten)\\b' && echo '{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":\"DEPLOY-HINWEIS: Der User moechte deployen. Verwende den /pyVGM-deploy Skill (Skill-Tool mit skill=pyVGM-deploy), NICHT deploy.sh direkt. Der Skill prueft Version, baut und deployt standardisiert.\"}}' || echo '{}'",
+            "statusMessage": "pyVGM: Deploy-Erkennung..."
+          }
+        ]
+      }
     ]
   }
 }
