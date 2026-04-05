@@ -1,41 +1,47 @@
-# Nächste Verbesserung: Context Watchdog + Phasenmodell
+# Nächste Verbesserung: Context-Management + Phasenmodell
 
 ## Phasenmodell: Sketch → AI-Discuss & Build → Gate
 
 pyVGM folgt einem AI-nativen Lifecycle-Modell:
 
-```
-                             Iterate
-  ┌──────────────────────────────────────────────────┐
-  ↓                                                  │
-Sketch ─→ AI-Build ─→ Refactor ─→ Gate ─→ Production
-                         ↑         │
-                         │ Refine  │
-                         └─────────┘
+```mermaid
+graph LR
+    subgraph CM["AI-Context-Management"]
+        S["AVG\nSketch"] --> AB["↻ AI-Bild"]
+    end
+    AB --> R["VGM\nRefactor"]
+    R --> G["VGM\nGate"]
+    G --> P[Production]
+    G -- Refine --> R
+    P -- Innovate --> S
 
-└────────────────────────────────────┘
-             Context Watchdog
+    style AB fill:#1a4a6e,color:#fff,stroke:#0d2b3e
+    style S fill:#fff,color:#333,stroke:#1a4a6e
+    style R fill:#fff,color:#333,stroke:#1a4a6e
+    style G fill:#fff,color:#333,stroke:#1a4a6e
+    style P fill:#fff,color:#333,stroke:#1a4a6e
+    style CM fill:#f5f5f5,color:#333,stroke:#1a4a6e
 ```
 
 | Phase | Was passiert | Wer |
 |---|---|---|
-| **Sketch** | Hauptanforderungen umreißen — kein Pflichtenheft, nur Kernziele und Rahmenbedingungen | Mensch |
-| **AI-Build** | Mit KI diskutieren und bauen. Fokus auf Fachlichkeit. Architektur wächst emergent aus dem Dialog. | Mensch + KI |
-| **Refactor** | Technisches Saubermachen: IT-Vorgaben, Enterprise-Architektur, Code-Qualität | KI + Mensch |
-| **Gate** | Compliance-Prüfung, formale Dokumentation aus dem Ist-Stand generieren — bank-tauglich. Nicht bestanden → zurück in Refactor. | KI generiert, Mensch prüft |
-| **Production** | Deployment, Betrieb | Mensch |
+| **Sketch** | Hauptanforderungen umreißen — kein Pflichtenheft, nur Kernziele und Rahmenbedingungen | Mensch + KI |
+| **AI-Build** | Iterativer Discuss-Build-Zyklus: mit KI diskutieren, bauen, prüfen, verfeinern — so lange bis der fachliche Stand stimmt. Architektur wächst emergent aus dem Dialog. | Mensch + KI |
+| **Refactor** | Code-Hygiene, Architektur-Alignment, technische Schulden abbauen, EA-Konformität herstellen | VGM-Framework + KI |
+| **Gate** | Compliance-Prüfung, formale Dokumentation aus dem Ist-Stand generieren — regulatorische Vorgaben. Nicht bestanden → zurück in Refactor. | VGM-Framework + KI |
+| **Production** | Deployment, Betrieb | Betrieb |
 
 **Zwei Loops:**
 - **Gate → Refactor**: Gate nicht bestanden — technisch nachbessern, bis die Vorgaben erfüllt sind.
-- **Production → Sketch** (Iterate): Neuer fachlicher Zyklus — frischer Sketch, losgelöst vom vorherigen.
+- **Production → Sketch** (Innovate): Neuer fachlicher Zyklus — frischer Sketch, losgelöst vom vorherigen.
 
-**Context Watchdog:** Überwacht den gesamten Bereich von Sketch bis Gate. Erinnert an Checkpoints, sichert den Stand, ermöglicht saubere Kontextwechsel zwischen Sessions. Im Gate selbst nicht nötig — dort sind die Prüf-Skills (`/pyVGM-code-quality`, `/pyVGM-security-check` etc.) die Kontrollinstanz.
+**Context-Management:** Überwacht den gesamten Bereich von Sketch bis Gate. Erinnert an Checkpoints, sichert den Stand, ermöglicht saubere Kontextwechsel zwischen Sessions. Im Gate selbst nicht nötig — dort sind die Prüf-Skills (`/pyVGM-code-quality`, `/pyVGM-security-check` etc.) die Kontrollinstanz.
 
 **Einordnung:** Spec-First AI Development mit Compliance Gate. Methodenneutral — ergänzt sowohl klassische (V-Modell) als auch agile (Scrum) Vorgehensweisen. Jeder Durchlauf liefert einen produktionsreifen, geprüften Stand.
 
 ---
 
-## Context Watchdog
+## Context-Management
 
 Leichtgewichtige Lösung für Context Rot und Crash Recovery — ohne externes CLI, vollständig innerhalb von Claude Code mit Hooks und Skills.
 
