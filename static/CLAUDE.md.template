@@ -55,6 +55,26 @@ Bei Bedarf zusätzlich:
 
 ---
 
+## Kontexthygiene
+
+Der Hauptkontext muss schlank bleiben. Schwere Arbeit an Agents delegieren.
+
+### Pflicht: Agents nutzen für
+- **Codebase-Recherche** (mehr als 2-3 Dateien lesen) → `subagent_type: Explore`
+- **Code-Generierung** ganzer Dateien oder Module → Agent mit Write-Berechtigung
+- **Reviews & Checks** (Quality, Security, Flask) → Agent liefert nur Ergebnis zurück
+- **Dokumentation generieren** → Agent schreibt, Hauptkontext koordiniert
+
+### Verboten im Hauptkontext
+- Große Dateien direkt lesen (> 200 Zeilen) — Agent nutzen
+- Breite Grep-Suchen über die gesamte Codebase — Agent nutzen
+- Mehrere Dateien nacheinander lesen um "einen Überblick zu bekommen" — Agent nutzen
+
+### Worktree-Isolation
+Bei riskanten Änderungen Agents mit `isolation: "worktree"` starten — arbeitet auf einer Kopie, Original bleibt sicher.
+
+---
+
 ## Deploy
 
 **NIEMALS eigenständig deployen — IMMER vorher den User fragen!**

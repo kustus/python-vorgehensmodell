@@ -7,10 +7,13 @@ pyVGM folgt einem AI-nativen Lifecycle-Modell:
 ```mermaid
 graph LR
     subgraph CM["AI-Context-Management"]
-        S["AVG\nSketch"] --> AB["↻ AI-Bild"]
+        S["VGM
+        Sketch"] --> AB["↻ AI-Bild"]
     end
-    AB --> R["VGM\nRefactor"]
-    R --> G["VGM\nGate"]
+    AB --> R["VGM
+    Refactor"]
+    R --> G["VGM
+    Gate"]
     G --> P[Production]
     G -- Refine --> R
     P -- Innovate --> S
@@ -84,10 +87,23 @@ Noch offen: Session-Handling und Fehlerseiten.
 
 ```jsonc
 {
-  "event": "on_session_start",
+  "event": "SessionStart",
   "command": "bash scripts/session-check.sh"
   // Liest STATE.md → gibt Resume-Kontext an Claude zurück
   // Kein STATE.md → "Frische Session, kein alter Stand"
+}
+```
+
+**InstructionsLoaded-Hook** — Begrüßung und Orientierung (Idee):
+
+```jsonc
+{
+  "event": "InstructionsLoaded",
+  "command": "bash scripts/ready-message.sh"
+  // Prüft Projektstatus und gibt Willkommensnachricht aus:
+  // "pyVGM bereit. Dein Projekt ist in Phase: AI-Build.
+  //  Nächster Schritt: /pyVGM-status oder /pyVGM-checkpoint"
+  // Listet relevante Commands basierend auf aktuellem Stand
 }
 ```
 
@@ -95,7 +111,7 @@ Noch offen: Session-Handling und Fehlerseiten.
 
 ```jsonc
 {
-  "event": "post_tool_call",
+  "event": "PostToolUse",
   "command": "bash scripts/activity-monitor.sh"
   // Zählt Tool-Calls in Temp-Datei hoch
   // Ab ~80 Calls: Warnung "Kontext wird voll, /pyVGM-checkpoint empfohlen"
@@ -113,6 +129,28 @@ Noch offen: Session-Handling und Fehlerseiten.
 | Tool-Calls zählen (via Temp-Datei) | Token-Verbrauch messen |
 
 Der Schwellwert (~80 Tool-Calls) ist ein Proxy für Kontextauslastung — nicht perfekt, aber in der Praxis ausreichend.
+
+**PreCompact-Hook** — letzte Verteidigungslinie, wenn der Kontext tatsächlich überläuft:
+
+```jsonc
+{
+  "event": "PreCompact",
+  "command": "bash scripts/pre-compact-guard.sh"
+  // Blockt Compact (Exit Code 2)
+  // Meldet: "Kontext voll. Bitte /pyVGM-checkpoint ausführen
+  //          und neue Session starten statt zu komprimieren."
+}
+```
+
+**Dreistufiges Frühwarnsystem:**
+
+| Stufe | Trigger | Aktion |
+|---|---|---|
+| 1. Gelb | ~80 Tool-Calls (Activity-Monitor) | Hinweis: Checkpoint empfohlen |
+| 2. Orange | ~120 Tool-Calls (Activity-Monitor) | Dringende Warnung |
+| 3. Rot | PreCompact feuert | Compact blockieren, Checkpoint erzwingen |
+
+Vorteil: Der Activity-Monitor warnt früh (Proxy), PreCompact greift als harte Grenze wenn das System selbst erkennt, dass der Kontext voll ist — kein Raten, kein Schätzen.
 
 ### 3. Skills
 
@@ -156,6 +194,52 @@ Session 2:
 | **Crash Recovery** | STATE.md überlebt alles |
 | **Wissensverlust** | Resume-Prompt enthält den vollen Kontext |
 | **Vergessene Commits** | Checkpoint committet automatisch |
+
+## Agent-Delegation (Kontexthygiene)
+
+Der Hauptkontext wird vor allem durch Tool-Ergebnisse aufgebläht — Dateiinhalte, Grep-Resultate, Bash-Output. Durch konsequente Delegation an Agents bleibt der Hauptkontext schlank und lange nutzbar.
+
+**Prinzip:** Hauptkontext = Orchestrator, Agents = Arbeiter.
+
+```
+Hauptkontext (schlank)          Agents (eigener Kontext, wird verworfen)
+─────────────────────          ──────────────────────────────────────
+Versteht die Aufgabe            Liest Dateien, sucht im Codebase
+Trifft Entscheidungen           Generiert Code, führt Tests aus
+Koordiniert                     Liefert kompaktes Ergebnis zurück
+Merkt sich nur Ergebnisse       Kontext wird danach verworfen
+```
+
+### Agent-Typen für pyVGM-Skills
+
+| Agent-Aufgabe | Statt im Hauptkontext | Kontextersparnis |
+|---|---|---|
+| **Research-Agent** | Codebase durchsuchen, Architektur verstehen | ~50k Token |
+| **Build-Agent** | Dateien generieren/ändern | ~30k Token |
+| **Review-Agent** | Code-Qualität, Security, Flask-Check | ~40k Token |
+| **Doc-Agent** | Dokumentation generieren | ~30k Token |
+
+### PostToolUse Size-Guard (Idee)
+
+```jsonc
+{
+  "event": "PostToolUse",
+  "command": "bash scripts/context-size-guard.sh"
+  // Prüft ob Tool-Output > X Zeilen
+  // Warnt: "Großes Ergebnis im Hauptkontext.
+  //         Nächstes Mal Agent nutzen."
+}
+```
+
+### Worktree-Isolation
+
+Agents können mit `isolation: "worktree"` in einer Kopie des Repos arbeiten. Wenn der Build schiefgeht, bleibt das Original unberührt.
+
+### CLAUDE.md-Instruktionen
+
+Die wichtigste Maßnahme — wirkt sofort ohne Code-Änderungen. Wird über die `CLAUDE.md.template` in jedes Projekt eingebaut (siehe Abschnitt "Kontexthygiene" im Template).
+
+---
 
 ## Design-Prinzipien
 
