@@ -53,6 +53,27 @@ projekt/
 - Ein Blueprint pro logischem Bereich
 - Routes orchestrieren nur — keine Fachlogik in Routes
 
+## Datenbank-Konvention
+
+### Eine DB pro App: `data/app.db`
+
+Jede Flask-App verwendet **genau eine SQLite-Datenbank** unter dem festen Pfad `data/app.db`.
+
+- **Alle Tabellen** der App liegen in dieser einen DB (keine Aufteilung nach Concerns)
+- **Pfad:** `data/app.db` (relativ zum App-Verzeichnis, im Docker-Volume persistent)
+- **Env-Variable:** `APP_DB_PATH` (Override, Default: `data/app.db`)
+- **WAL-Modus** aktivieren (paralleler Lese-/Schreibzugriff)
+- **Kein direkter Zugriff** auf Datenbanken anderer Apps — immer über HTTP-APIs
+
+### Kein Cross-App DB-Zugriff
+
+Apps dürfen **nicht** direkt auf SQLite-Dateien anderer Apps zugreifen. Alle app-übergreifenden Daten (Users, Tasks, Config) werden über **REST-APIs** gelesen und geschrieben.
+
+| Zugriff | Falsch | Richtig |
+|---------|--------|---------|
+| User-Daten | `sqlite3.connect("../suite/data/app.db")` | `suite_api.get_user_by_nr(nr)` → HTTP |
+| Tasks | Direkt auf `tasks.db` | `suite_api.get_tasks(...)` → HTTP |
+
 ## UI-Architektur
 
 ### UI-Konventionen
@@ -61,6 +82,22 @@ projekt/
 - **Kein `integrity`-Attribut** bei CDN-Scripts (Safari blockiert bei Hash-Mismatch)
 - **Keine Google Fonts** direkt verlinken (DSGVO) — lokal als WOFF2
 - **Deutsch:** Alle Labels, Meldungen auf Deutsch
+
+### Wiederverwendbare UI-Komponenten (Partials)
+
+Komplexere UI-Elemente, die in mehreren Templates vorkommen (können), werden als **Jinja2-Partial** implementiert:
+
+- **Partial-Datei:** `_komponentenname.html` (mit Underscore-Prefix) in einem gemeinsamen Template-Verzeichnis
+- **API-Route:** Zugehörige Backend-Route liefert die Daten für die Komponente (z.B. `POST /api/konten` für eine Konto-Suche)
+- **Einbindung:** `{% include "_komponentenname.html" %}` — das Partial enthält keinen eigenen `<script>`-Tag, sondern wird innerhalb eines `<script>`-Blocks des Aufrufers inkludiert
+- **Konfiguration:** Das Partial wird über HTML-Attribute (`data-*`) oder Übergabe-Variablen parametrisiert, nicht über globale JS-Variablen
+
+**Wann ein Partial erstellen?**
+- Das UI-Element wird in ≥ 2 Templates verwendet (oder wird das absehbar)
+- Es hat eigene Interaktionslogik (Dropdown, Suche, Validierung)
+- Es braucht Backend-Daten (API-Call)
+
+**Beispiel:** Konto-Suche (`_konto_suche.html`) — Suchfeld mit Dropdown, lädt Konten per API, filtert nach bebuchten Konten.
 
 ### Links
 - Intern: kein `target="_blank"`

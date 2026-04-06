@@ -27,6 +27,7 @@ python -m ruff check src/ --select E,W,F,I --statistics 2>/dev/null || echo "ruf
 - **Blueprint-Größe:** Dateien > 500 Zeilen → sollten aufgeteilt werden
 - **Zirkuläre Imports:** Imports zwischen Modulen prüfen
 - **Separation of Concerns:** Templates mit Business-Logik? JS mit Backend-Logik?
+- **UI-Partial-Kandidaten:** Gibt es UI-Elemente (Suchfelder, Dropdowns, Formularbereiche), die in mehreren Templates dupliziert oder ähnlich implementiert sind? → Als gemeinsames Partial (`_name.html` + API-Route) auslagern. Prüfe insbesondere gewachsene Templates, die Copy-Paste-Muster zeigen.
 
 ### 3. Konsistenz
 

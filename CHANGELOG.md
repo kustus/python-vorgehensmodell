@@ -4,6 +4,26 @@ Neueste Änderungen oben. Jeder Eintrag enthält einen **Migration**-Abschnitt m
 
 ---
 
+## 2026-04-06 — Datenbank-Konvention: Eine DB pro App
+
+ARCHITECTURE.md: Neuer Abschnitt "Datenbank-Konvention" — jede App hat genau eine SQLite-DB unter `data/app.db`. Kein Cross-App DB-Zugriff, nur über HTTP-APIs.
+
+### Migration
+1. App-eigene DB nach `data/app.db` umbenennen (Auto-Migration beim Start implementieren)
+2. Env-Variable `APP_DB_PATH` statt app-spezifischer Variablen
+3. Verwaiste/leere DB-Dateien löschen
+
+---
+
+## 2026-04-06 — UI-Partials als Architektur-Vorgabe
+
+ARCHITECTURE.md: Neuer Abschnitt "Wiederverwendbare UI-Komponenten (Partials)" — komplexere UI-Elemente als Jinja2-Partial mit zugehöriger API-Route implementieren. Code-Quality-Skill: Neuer Prüfpunkt "UI-Partial-Kandidaten" erkennt duplizierte UI-Elemente in Templates.
+
+### Migration: Keine
+Bestehende Projekte profitieren automatisch bei nächster Code-Quality-Prüfung.
+
+---
+
 ## 2026-04-05 — doc-pdf Assets über framework-links
 
 doc-pdf Skill referenziert pdf-style.css und assconso-logo.png jetzt aus `framework-links/` statt `dokumentation/`.
