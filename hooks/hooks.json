@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"DEPLOY-ERINNERUNG: Hat der User diesem Deploy explizit zugestimmt? Falls nicht, STOPPE und frage den User zuerst!\"}}'",
+            "command": "echo 'BLOCKIERT: Deploy darf nicht ohne explizite User-Zustimmung ausgeführt werden. Frage den User zuerst!' >&2; exit 1",
             "if": "Bash(*deploy.sh*)",
             "statusMessage": "pyVGM: Deploy-Schutz..."
           }
