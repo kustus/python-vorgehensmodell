@@ -4,6 +4,18 @@ Neueste Änderungen oben. Jeder Eintrag enthält einen **Migration**-Abschnitt m
 
 ---
 
+## 2026-04-07 — Neuer Skill: `/pyVGM-resume` (Session-Briefing)
+
+Neuer Skill der am Anfang einer Session den Projekt-Kontext wiederherstellt. Liest STATE.md, Memory, Git-Log und gibt ein kompaktes Briefing mit offenen Punkten und Prioritätsvorschlägen.
+
+Deploy-Hook: `exit 1` statt nur Hinweis (blockiert tatsächlich).
+
+### Migration
+1. `cp .basis-python-framework/skills/resume/ .claude/skills/pyVGM-resume/` (oder `/pyVGM-update` ausführen)
+2. Deploy-Hook in `.claude/settings.local.json` prüfen — sollte `exit 1` enthalten
+
+---
+
 ## 2026-04-06 — Datenbank-Konvention: Eine DB pro App
 
 ARCHITECTURE.md: Neuer Abschnitt "Datenbank-Konvention" — jede App hat genau eine SQLite-DB unter `data/app.db`. Kein Cross-App DB-Zugriff, nur über HTTP-APIs.
