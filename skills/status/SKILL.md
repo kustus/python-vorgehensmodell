@@ -51,6 +51,8 @@ Prüfe `.Vorgehensmodell/` Vollständigkeit:
 - Run-Phase: X/4 Dokumente vorhanden
 - Dokumentation: X PDFs generiert
 
+**Wichtig bei PDF-Zählung:** Nur eigene Projekt-PDFs zählen (`.Vorgehensmodell/dokumentation/*.pdf` und `.Vorgehensmodell/dokumentation/pdf/*.pdf`). Externe/mitgelieferte Dokumentation (z.B. `external-libs/`, `fachliche-docs/`) ausschließen — diese sind Referenzmaterial, keine generierten Projektdokumente.
+
 ## Ausgabeformat
 
 ```
