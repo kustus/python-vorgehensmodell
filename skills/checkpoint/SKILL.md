@@ -12,58 +12,58 @@ Sichert den aktuellen Arbeitsstand: Dokumentation, Memory und Git.
 
 ## Ablauf
 
-### 1. STATE.md aktualisieren
+### Phase 1: Alles sammeln (READ-ONLY)
 
-Lies `.Vorgehensmodell/build/STATE.md` und aktualisiere:
+**Parallel** die folgenden Informationen zusammentragen — KEINE Dateien ändern:
 
-- **Aktuelle Arbeit:** Was wurde in dieser Session implementiert? (Features, Bugfixes, Refactoring)
-- **Entscheidungen:** Neue Architektur- oder Design-Entscheidungen (mit Datum + Begründung)
-- **Bekannte Probleme:** Neue Bugs oder offene Punkte
-- **Geklärte Fragen:** Fragen die in dieser Session beantwortet wurden
+1. **STATE.md lesen** — aktuellen Stand kennen
+2. **Git Status + Diff** — `git status`, `git diff --stat`, geänderte Dateien auflisten
+3. **Memory-Index lesen** — bestehende Memories kennen, Duplikate vermeiden
+4. **Session-Änderungen zusammenfassen** — was wurde implementiert, welche Entscheidungen
 
-Zeige dem Benutzer die geplanten Änderungen an STATE.md und warte auf Bestätigung bevor du schreibst.
+### Phase 2: Vorschlag präsentieren (EINE Frage, ALLES auf einmal)
 
-### 2. Memory aktualisieren
+Dem Benutzer **einen einzigen, vollständigen Vorschlag** zeigen:
 
-Prüfe ob es neue Erkenntnisse gibt die in Memory gespeichert werden sollten:
+```
+═══ CHECKPOINT-VORSCHLAG ═══
 
-- **Projekt-Memory:** Neue Architekturentscheidungen, Konventionen, Infrastruktur-Änderungen
-- **Feedback-Memory:** Korrekturen oder bestätigte Vorgehensweisen vom Benutzer
-- **Referenz-Memory:** Neue externe Ressourcen oder API-Erkenntnisse
+📄 STATE.md — Geplante Änderungen:
+  [Vorschau der Aktualisierungen, kompakt]
 
-Zeige dem Benutzer die geplanten Memory-Einträge und warte auf Bestätigung.
+🧠 Memory — Neue/aktualisierte Einträge:
+  [Liste der geplanten Memory-Einträge oder "Keine neuen Memories"]
 
-### 3. Git Status + Diff
+📦 Git — XX Dateien geändert:
+  [Dateiliste, Commit-Message-Vorschlag]
 
-Zeige:
-- `git status` — welche Dateien geändert/neu
-- Zusammenfassung der Änderungen (keine vollständigen Diffs, nur Dateinamen + kurze Beschreibung)
-- Anzahl geänderter Dateien, eingefügte/gelöschte Zeilen
+🚀 Push: ja/nein
 
-Frage den Benutzer: **"Soll ich committen?"**
+═══════════════════════════════
 
-### 4. Commit
+Änderungen OK? (Anpassen oder bestätigen)
+```
 
-Nur nach expliziter Bestätigung:
+Der Benutzer antwortet **einmal** — z.B. "ja", "ohne Push", "Memory X weglassen", etc.
 
-- Stage alle relevanten Dateien (keine Secrets, keine .env)
-- Erstelle eine aussagekräftige Commit-Message auf Deutsch
-- Format: `feat/fix/refactor/docs: Kurzbeschreibung` + Details im Body
-- Co-Authored-By Header
+### Phase 3: Ausführen (OHNE weitere Fragen)
 
-### 5. Push
+Nach Bestätigung alles in einem Rutsch durchführen:
 
-Nur nach **separater** expliziter Bestätigung:
-
-- Frage: **"Soll ich auf remote pushen?"**
-- `git push`
+1. STATE.md schreiben
+2. Memory-Dateien schreiben/aktualisieren + MEMORY.md Index
+3. `git add` (relevante Dateien, keine Secrets)
+4. `git commit` mit der vorgeschlagenen Message
+5. `git push` (nur wenn im Vorschlag bestätigt)
+6. Kurze Bestätigung: "Checkpoint gesichert. Commit: [hash]"
 
 ---
 
-## Wichtige Regeln
+## Regeln
 
-- **Jeder Schritt einzeln bestätigen** — nicht alles auf einmal durchführen
-- **STATE.md erst zeigen, dann schreiben** — der Benutzer entscheidet was rein kommt
+- **Maximal 1 Interaktion** — alles in Phase 2 zeigen, nach Bestätigung durchlaufen
+- **STATE.md:** Session-Änderungen oben einfügen, nicht die ganze Datei neu schreiben
 - **Memory sparsam** — nur wirklich neue Erkenntnisse, keine Duplikate
-- **Commit-Message soll die Session zusammenfassen**, nicht einzelne Änderungen auflisten
-- **Keine Secrets commiten** — .env, Passwörter, API-Keys prüfen
+- **Commit-Message:** Deutsch, fasst die Session zusammen (nicht einzelne Änderungen)
+- **Keine Secrets commiten** — .env, Passwörter, API-Keys, CREDENTIALS.md prüfen
+- **Push nur wenn bestätigt** — Default-Vorschlag: ja (kann der User ablehnen)

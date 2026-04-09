@@ -17,6 +17,7 @@ Stellt den Projekt-Kontext am Anfang einer neuen Session wieder her. Liest die b
 Lies **parallel** (per Agent oder direkt):
 
 - `.Vorgehensmodell/build/STATE.md` → "Aktuelle Arbeit" (erster Block), "Bekannte Probleme", "Offen:"-Einträge
+- `.Vorgehensmodell/build/CREDENTIALS.md` → Zugangsdaten (Deploy-Ziel, APIs, Datenbanken). Diese Datei existiert nur lokal (nicht im Git) und enthält Passwörter für SSH, Datenbanken etc. **Stillschweigend lesen und für den Deploy-Workflow merken**, nicht im Briefing ausgeben.
 - `MEMORY.md` → Index aller Projekt-Memories scannen (Typ `project` = offene Aufgaben)
 - `git log --oneline -5` → letzte 5 Commits
 - `pyproject.toml` → aktuelle Version(en)

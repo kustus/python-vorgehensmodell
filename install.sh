@@ -150,6 +150,14 @@ if [ "$PLUGIN_MODE" = true ]; then
   fi
 fi
 
+# CREDENTIALS.md aus Template erstellen (falls nicht vorhanden)
+CRED_TEMPLATE="${SCRIPT_DIR}/static/CREDENTIALS.md.template"
+CRED_TARGET="${PROJECT_ROOT}/.Vorgehensmodell/build/CREDENTIALS.md"
+if [ -f "$CRED_TEMPLATE" ] && [ ! -f "$CRED_TARGET" ] && [ -d "${PROJECT_ROOT}/.Vorgehensmodell/build" ]; then
+  PROJECT_NAME=$(basename "${PROJECT_ROOT}")
+  sed "s/{{PROJECT_NAME}}/${PROJECT_NAME}/g" "$CRED_TEMPLATE" > "$CRED_TARGET"
+fi
+
 # post-install.md ins Projektverzeichnis kopieren (mit Platzhaltern ersetzen)
 POST_INSTALL_SRC="${SCRIPT_DIR}/.claude-plugin/post-install.md"
 if [ -f "$POST_INSTALL_SRC" ]; then
