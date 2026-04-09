@@ -67,3 +67,4 @@ Nach Bestätigung alles in einem Rutsch durchführen:
 - **Commit-Message:** Deutsch, fasst die Session zusammen (nicht einzelne Änderungen)
 - **Keine Secrets commiten** — .env, Passwörter, API-Keys, CREDENTIALS.md prüfen
 - **Push nur wenn bestätigt** — Default-Vorschlag: ja (kann der User ablehnen)
+- **Submodul prüfen:** Immer `git status` im Framework-Submodul (`.basis-python-framework/`) prüfen. Wenn dort Änderungen vorliegen: zuerst im Submodul committen, dann im Hauptrepo die Submodul-Referenz updaten (`git add .basis-python-framework`). Beides im Vorschlag anzeigen.
