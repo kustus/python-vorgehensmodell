@@ -10,7 +10,7 @@
 ## Code-Konventionen
 
 ### Python
-- Python 3.10+ (Type Hints verwenden)
+- Python 3.11 (Type Hints verwenden)
 - PEP 8 Formatierung (ruff als Linter/Formatter)
 - Imports: stdlib → third-party → eigene Module (jeweils alphabetisch)
 - Keine globalen Variablen außer Konstanten (UPPER_CASE)
@@ -49,6 +49,7 @@ def get_eingang(eingang_id: int) -> dict | None:
 Jede Flask-App muss bereitstellen:
 - `GET /api/health` — Health-Check
 - `GET /manifest` — App-Metadaten
+- `GET /info` — App-Informationen
 - `POST /api/reload-config` — Config neu laden
 
 ### Flask — Context Processor (Pflicht)

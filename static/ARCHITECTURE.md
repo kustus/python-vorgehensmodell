@@ -118,6 +118,7 @@ docker compose up -d
 Jede Flask-App muss bereitstellen:
 - `GET /api/health` — Health-Check
 - `GET /manifest` — App-Metadaten
+- `GET /info` — App-Informationen
 - `POST /api/reload-config` — Config neu laden
 
 ## Bekannte Fallstricke
