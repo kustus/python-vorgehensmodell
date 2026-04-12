@@ -4,7 +4,7 @@ description: Session-Checkpoint — STATE.md aktualisieren, Memory sichern, Comm
 
 # Checkpoint
 
-Sichert den aktuellen Arbeitsstand: Dokumentation, Memory und Git.
+Sichert den aktuellen Arbeitsstand: Dokumentation, Memory und Git. Läuft nach **einer einzigen Auswahl** vollautomatisch durch.
 
 **Wann verwenden:** Am Ende einer Arbeitssession, vor einem Themenwechsel, oder wenn der Kontext zu groß wird.
 
@@ -12,59 +12,45 @@ Sichert den aktuellen Arbeitsstand: Dokumentation, Memory und Git.
 
 ## Ablauf
 
-### Phase 1: Alles sammeln (READ-ONLY)
+### Phase 1: Alles sammeln (READ-ONLY, parallel)
 
-**Parallel** die folgenden Informationen zusammentragen — KEINE Dateien ändern:
+1. STATE.md lesen
+2. `git status --short` + `git diff --stat HEAD`
+3. MEMORY.md lesen (Duplikate vermeiden)
+4. Submodul-Status prüfen (`.basis-python-framework/`)
+5. Session-Änderungen zusammenfassen
 
-1. **STATE.md lesen** — aktuellen Stand kennen
-2. **Git Status + Diff** — `git status`, `git diff --stat`, geänderte Dateien auflisten
-3. **Memory-Index lesen** — bestehende Memories kennen, Duplikate vermeiden
-4. **Session-Änderungen zusammenfassen** — was wurde implementiert, welche Entscheidungen
+### Phase 2: Eine AskUserQuestion mit Vorschau (einzige Interaktion!)
 
-### Phase 2: Vorschlag präsentieren (EINE Frage, ALLES auf einmal)
+**Direkt per AskUserQuestion** mit Preview-Feature — die Optionen enthalten die vollständige Vorschau als Preview:
 
-Dem Benutzer **einen einzigen, vollständigen Vorschlag** zeigen:
+**Frage:** "Checkpoint-Modus wählen:"
+**Optionen mit Preview:**
+1. **Commit + Push** (Recommended) — Preview zeigt: STATE.md-Änderungen, Memory-Einträge, Dateiliste, Commit-Message
+2. **Nur Commit** — Preview wie Option 1, ohne Push
+3. **Nur STATE.md + Memory** — Kein Git
 
-```
-═══ CHECKPOINT-VORSCHLAG ═══
-
-📄 STATE.md — Geplante Änderungen:
-  [Vorschau der Aktualisierungen, kompakt]
-
-🧠 Memory — Neue/aktualisierte Einträge:
-  [Liste der geplanten Memory-Einträge oder "Keine neuen Memories"]
-
-📦 Git — XX Dateien geändert:
-  [Dateiliste, Commit-Message-Vorschlag]
-
-🚀 Push: ja/nein
-
-═══════════════════════════════
-
-Änderungen OK? (Anpassen oder bestätigen)
-```
-
-Der Benutzer antwortet **einmal** — z.B. "ja", "ohne Push", "Memory X weglassen", etc.
+Jede Option zeigt im Preview exakt was passieren wird. So sieht der User den Vorschlag UND wählt in einem Schritt.
 
 ### Phase 3: Ausführen (OHNE weitere Fragen)
 
-Nach Bestätigung alles in einem Rutsch durchführen:
+Nach Auswahl alles in einem Rutsch:
 
-1. STATE.md schreiben
+1. STATE.md aktualisieren (neuen Block oben einfügen, nicht neu schreiben)
 2. Memory-Dateien schreiben/aktualisieren + MEMORY.md Index
-3. `git add` (relevante Dateien, keine Secrets)
-4. `git commit` mit der vorgeschlagenen Message
-5. `git push` (nur wenn im Vorschlag bestätigt)
-6. Kurze Bestätigung: "Checkpoint gesichert. Commit: [hash]"
+3. Submodul committen (wenn Änderungen)
+4. `git add` (relevante Dateien, keine Secrets)
+5. `git commit` mit der vorgeschlagenen Message
+6. `git push` (nur bei Option 1)
+7. Kurze Bestätigung: `Checkpoint gesichert. Commit: [hash]`
 
 ---
 
 ## Regeln
 
-- **Maximal 1 Interaktion** — alles in Phase 2 zeigen, nach Bestätigung durchlaufen
-- **STATE.md:** Session-Änderungen oben einfügen, nicht die ganze Datei neu schreiben
+- **Genau 1 AskUserQuestion** — enthält die Preview, danach keine Fragen mehr
+- **STATE.md:** Session-Block oben einfügen, nicht die ganze Datei neu schreiben
 - **Memory sparsam** — nur wirklich neue Erkenntnisse, keine Duplikate
-- **Commit-Message:** Deutsch, fasst die Session zusammen (nicht einzelne Änderungen)
+- **Commit-Message:** Deutsch, fasst die Session zusammen
 - **Keine Secrets commiten** — .env, Passwörter, API-Keys, CREDENTIALS.md prüfen
-- **Push nur wenn bestätigt** — Default-Vorschlag: ja (kann der User ablehnen)
-- **Submodul prüfen:** Immer `git status` im Framework-Submodul (`.basis-python-framework/`) prüfen. Wenn dort Änderungen vorliegen: zuerst im Submodul committen, dann im Hauptrepo die Submodul-Referenz updaten (`git add .basis-python-framework`). Beides im Vorschlag anzeigen.
+- **Submodul:** Immer prüfen, bei Änderungen zuerst dort committen
