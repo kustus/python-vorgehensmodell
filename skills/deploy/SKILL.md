@@ -4,111 +4,135 @@ description: Build + Deploy der Flask-App (Docker oder direkt).
 
 # Deploy
 
-Baut und deployt die Flask-Anwendung.
+Baut und deployt die Flask-Anwendung auf das QNAP NAS. Läuft **ohne Rückfragen** durch — der User hat den Command explizit aufgerufen.
 
 ## Argumente
 
 | Argument | Beschreibung |
 |----------|-------------|
-| *(keins)* | Standard-Deploy: Build + Restart |
-| `full` | Mit Tests, Qualitätsprüfung + Git Tag |
-| `pre-prod` | Übergabepaket erstellen (Images + Docs) |
-| `prod` | Produktiv-Deploy (mit Checkliste) |
+| *(keins)* | Standard-Deploy |
+| `prod` | Produktiv-Deploy (mit Bestätigung) |
 
 ---
 
 ## Standard-Deploy (`/pyVGM-deploy`)
 
-### 1. Version prüfen
+### 0. Auswahl (AskUserQuestion — zwei Fragen am Anfang, dann automatisch)
 
-Lies die aktuelle Version aus `pyproject.toml`. Frage den Benutzer ob die Version stimmt oder ob sie erhöht werden soll.
+**Frage 1:** "Deploy-Modus wählen:"
+1. **Nur Deploy** — Build + Deploy, kein Git
+2. **Deploy + Commit** — Uncommitted Changes committen, dann deployen
+3. **Deploy + Commit + Push** — Committen, pushen, dann deployen
 
-### 2. Build
+**Frage 2:** "Tests vorher ausführen?"
+1. **Nein** — direkt deployen
+2. **Ja** — `pytest` vorher, bei Fehlern STOPP
 
-```bash
-docker compose build [service]
-```
+Bei Modus 3 + Tests: zusätzlich Git Tag `v<version>` erstellen + pushen.
 
-Oder bei Cross-Build (z.B. Mac → Linux):
-```bash
-docker buildx build --platform linux/amd64 -t <image>:<version> .
-```
+Danach läuft alles vollautomatisch durch — **keine weiteren Fragen**.
 
-### 3. Deploy
-
-```bash
-docker compose up -d [service]
-```
-
-### 4. Health-Check
+### 1. Tests (wenn gewählt)
 
 ```bash
-curl -s http://localhost:<PORT>/api/health | python3 -m json.tool
+python -m pytest tests/ -v
 ```
 
-Warte max. 30 Sekunden auf `{"ok": true}`.
+Bei Fehlern: **STOPP**, Fehler anzeigen, kein Deploy.
 
-### 5. Zusammenfassung
+### 2. Git-Commit (wenn Modus 2 oder 3)
 
-Zeige: Version, Build-Dauer, Health-Status.
+Wenn uncommitted Changes vorhanden:
+- `git add` aller geänderten Dateien (KEINE neuen unbekannten Dateien ohne Prüfung)
+- Commit-Message automatisch generieren (aus `git diff --stat` + Versionen)
 
----
+Wenn keine Changes vorhanden → diesen Schritt überspringen (kein Fehler).
 
-## Full-Deploy (`/pyVGM-deploy full`)
+### 3. Services bestimmen
 
-Vor dem Build zusätzlich:
+Prüfe welche Verzeichnisse geändert wurden (seit letztem Deploy/Commit):
+- `finance-ai-common/` geändert → **alle Consumer**: `suite-admin beleganalyse-ai steuerberater-ai monatsabschluss-ai`
+- Nur ein App-Verzeichnis geändert → nur diesen Service
+- Mehrere Apps → nur die geänderten
 
-1. **Tests ausführen**: `python -m pytest tests/ -v`
-   - Bei Fehlern: STOPP, Fehler anzeigen
-2. **Code-Qualität prüfen** (analog `/pyVGM-code-quality`)
-3. **Git Status prüfen**: Keine uncommitted Changes
-4. **Version bumpen** falls nötig
-5. Standard-Deploy (Build + Restart)
-6. **Git Tag erstellen**: `v<version>`
+Falls unklar oder keine Änderungen erkennbar: alle Services deployen.
 
----
+### 4. Deploy ausführen
 
-## Pre-Prod (`/pyVGM-deploy pre-prod`)
+Credentials aus `.Vorgehensmodell/build/CREDENTIALS.md` lesen (stillschweigend).
 
-Erstellt ein Übergabepaket für einen anderen Admin:
+Deploy via `deploy.sh` mit SSH_ASKPASS (nicht sshpass!):
 
-1. Full-Deploy-Prüfungen (Tests, Qualität)
-2. Docker-Image als TAR exportieren: `docker save <image> | gzip > <image>-<version>.tar.gz`
-3. Dokumentation generieren (`/pyVGM-doc-all`)
-4. Release-Report erstellen (Markdown):
-   - Version, Datum, Änderungen seit letztem Tag
-   - Test-Ergebnis, Qualitäts-Note
-   - Installationsanleitung
-5. Alles in ZIP packen:
-   ```
-   release-<version>/
-   ├── <image>-<version>.tar.gz
-   ├── docker-compose.yml
-   ├── RELEASE-REPORT.md
-   ├── INSTALL.md
-   └── docs/
-   ```
+```bash
+export SSHPASS='<password>'
+ASKPASS_SCRIPT=$(mktemp)
+cat > "$ASKPASS_SCRIPT" << 'ASKEOF'
+#!/bin/sh
+echo "$SSHPASS"
+ASKEOF
+chmod +x "$ASKPASS_SCRIPT"
+export SSH_ASKPASS="$ASKPASS_SCRIPT"
+export SSH_ASKPASS_REQUIRE=force
+export DISPLAY=:0
+./deploy.sh <services...> 2>&1
+rm -f "$ASKPASS_SCRIPT"
+```
+
+**Timeout:** 600 Sekunden (10 Minuten).
+**Immer im Vordergrund** — kein `run_in_background`.
+
+### 5. Git-Push + Tag (wenn Modus 3)
+
+- `git push`
+- Wenn Tests gewählt: zusätzlich Git Tag `v<version>` erstellen + pushen
+
+### 6. Health-Check
+
+Nach Deploy: Health-Check aller deployten Services (kein sleep, direkt versuchen):
+
+```bash
+curl -s --max-time 15 http://ac-nas1.local:<PORT>/api/health
+```
+
+Ports: suite-admin=5010, beleganalyse-ai=8000, steuerberater-ai=5011, monatsabschluss-ai=5012
+
+Suite-Admin hat Health unter `/suite/api/health` oder antwortet auf `/suite` mit Redirect — beides gilt als OK.
+
+### 7. Statusbericht
+
+Am Ende **einen** kompakten Bericht ausgeben:
+
+```
+╔══════════════════════════════════════════════════╗
+║  Deploy abgeschlossen                            ║
+╠══════════════════════════════════════════════════╣
+║  Modus: Deploy + Commit + Push                   ║
+║  Tests: ✅ 12 passed                             ║
+║  Commit: abc1234 — "feat: ..."                   ║
+║  Push: ✅                                        ║
+║  Tag: v0.15.0                                    ║
+║                                                  ║
+║  Services:                                       ║
+║  suite-admin        v0.40.0  ✅                  ║
+║  beleganalyse-ai    v0.45.0  ✅                  ║
+║  monatsabschluss-ai v0.15.0  ✅                  ║
+║                                                  ║
+║  Dauer: 3m 42s                                   ║
+╚══════════════════════════════════════════════════╝
+```
 
 ---
 
 ## Prod-Deploy (`/pyVGM-deploy prod`)
 
-**ACHTUNG:** Frage den Benutzer **explizit** per AskUserQuestion-Dialog um Bestätigung!
-
-Checkliste vor Prod-Deploy:
-- [ ] Tests erfolgreich?
-- [ ] Version getaggt?
-- [ ] Dokumentation aktuell?
-- [ ] Backup der Datenbank?
-- [ ] Rollback-Plan bekannt?
-
-Nach Bestätigung: Standard-Deploy auf Produktiv-Host.
+Einzige Ausnahme: Hier wird **zusätzlich** eine Bestätigungs-Frage gestellt (Checkliste: Tests OK, Backup, Rollback-Plan).
 
 ---
 
 ## Wichtige Regeln
 
-- **NIEMALS ohne Bestätigung deployen** (besonders bei prod)
-- **Config-Dateien nie überschreiben** — gehören dem Betrieb, nicht dem Build
+- **Maximal 2 Fragen am Anfang** (Modus + Tests) — danach läuft alles durch
+- **Config-Dateien nie überschreiben** — gehören dem Betrieb
 - Bei Fehlern im Health-Check: Logs zeigen (`docker compose logs <service>`)
-- Rollback: `git checkout v<vorherige-version>` → neu builden → deployen
+- **SSH_ASKPASS verwenden**, nicht sshpass (siehe SSH-DEPLOY-ASKPASS.md)
+- Deploy immer im **Vordergrund** — kein run_in_background
