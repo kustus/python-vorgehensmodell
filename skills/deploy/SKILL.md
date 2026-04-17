@@ -6,6 +6,30 @@ description: Build + Deploy der Flask-App (Docker oder direkt).
 
 Baut und deployt die Flask-Anwendung auf das QNAP NAS. Läuft **ohne Rückfragen** durch — der User hat den Command explizit aufgerufen.
 
+## Feste Pfade (NICHT suchen!)
+
+| Was | Pfad (relativ zum Projekt-Root) |
+|-----|------|
+| **deploy.sh** | `./deploy.sh` (Projekt-Root, NICHT `deploy/`) |
+| **docker-compose.yml** | `./docker-compose.yml` (Projekt-Root) |
+| **Credentials** | `.Vorgehensmodell/build/CREDENTIALS.md` |
+| **Common-Library** | `finance-ai-common/pyproject.toml` |
+| **App-Verzeichnisse** | `finance-ai-applications/<app-name>/pyproject.toml` |
+
+**Service-Namen für deploy.sh:**
+`suite-admin`, `beleganalyse-ai`, `steuerberater-ai`, `monatsabschluss-ai`, `buchungsvergleich-ai`, `jahresabschluss-ai`, `amtron-export`
+
+**Health-Check Ports:**
+| Service | Port | Health-URL |
+|---------|------|-----------|
+| suite-admin | 5010 | `/suite/api/health` |
+| beleganalyse-ai | 8000 | `/api/health` |
+| steuerberater-ai | 5011 | `/api/health` |
+| monatsabschluss-ai | 5012 | `/api/health` |
+| buchungsvergleich-ai | 5014 | `/api/health` |
+| jahresabschluss-ai | 5013 | `/api/health` |
+| amtron-export | 8082 | `/api/health` |
+
 ## Argumente
 
 | Argument | Beschreibung |
@@ -51,20 +75,26 @@ Wenn keine Changes vorhanden → diesen Schritt überspringen (kein Fehler).
 ### 3. Services bestimmen
 
 Prüfe welche Verzeichnisse geändert wurden (seit letztem Deploy/Commit):
-- `finance-ai-common/` geändert → **alle Consumer**: `suite-admin beleganalyse-ai steuerberater-ai monatsabschluss-ai`
+- `finance-ai-common/` geändert → **alle Consumer**: `suite-admin beleganalyse-ai steuerberater-ai monatsabschluss-ai buchungsvergleich-ai`
 - Nur ein App-Verzeichnis geändert → nur diesen Service
 - Mehrere Apps → nur die geänderten
 
 Falls unklar oder keine Änderungen erkennbar: alle Services deployen.
 
-### 4. Deploy ausführen
+### 4. Version hochzählen
+
+**Vor dem Commit** die Version in `pyproject.toml` der betroffenen App(s) hochzählen:
+- Patch (+0.0.1) für Bugfixes/UI-Tweaks
+- Minor (+0.1.0) für Features
+
+### 5. Deploy ausführen
 
 Credentials aus `.Vorgehensmodell/build/CREDENTIALS.md` lesen (stillschweigend).
 
-Deploy via `deploy.sh` mit SSH_ASKPASS (nicht sshpass!):
+Deploy via `deploy.sh` **im Projekt-Root** mit SSH_ASKPASS (nicht sshpass!):
 
 ```bash
-export SSHPASS='<password>'
+export SSHPASS='Cal0t_12'
 ASKPASS_SCRIPT=$(mktemp)
 cat > "$ASKPASS_SCRIPT" << 'ASKEOF'
 #!/bin/sh
@@ -81,12 +111,12 @@ rm -f "$ASKPASS_SCRIPT"
 **Timeout:** 600 Sekunden (10 Minuten).
 **Immer im Vordergrund** — kein `run_in_background`.
 
-### 5. Git-Push + Tag (wenn Modus 3)
+### 6. Git-Push + Tag (wenn Modus 3)
 
 - `git push`
 - Wenn Tests gewählt: zusätzlich Git Tag `v<version>` erstellen + pushen
 
-### 6. Health-Check
+### 7. Health-Check
 
 Nach Deploy: Health-Check aller deployten Services (kein sleep, direkt versuchen):
 
@@ -94,11 +124,9 @@ Nach Deploy: Health-Check aller deployten Services (kein sleep, direkt versuchen
 curl -s --max-time 15 http://ac-nas1.local:<PORT>/api/health
 ```
 
-Ports: suite-admin=5010, beleganalyse-ai=8000, steuerberater-ai=5011, monatsabschluss-ai=5012
+Siehe Port-Tabelle oben.
 
-Suite-Admin hat Health unter `/suite/api/health` oder antwortet auf `/suite` mit Redirect — beides gilt als OK.
-
-### 7. Statusbericht
+### 8. Statusbericht
 
 Am Ende **einen** kompakten Bericht ausgeben:
 
@@ -131,6 +159,8 @@ Einzige Ausnahme: Hier wird **zusätzlich** eine Bestätigungs-Frage gestellt (C
 
 ## Wichtige Regeln
 
+- **Keine Suche nach deploy.sh** — liegt immer im Projekt-Root (`./deploy.sh`)
+- **Keine Suche nach Credentials** — stehen in `.Vorgehensmodell/build/CREDENTIALS.md`
 - **Maximal 2 Fragen am Anfang** (Modus + Tests) — danach läuft alles durch
 - **Config-Dateien nie überschreiben** — gehören dem Betrieb
 - Bei Fehlern im Health-Check: Logs zeigen (`docker compose logs <service>`)
